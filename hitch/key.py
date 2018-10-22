@@ -19,6 +19,8 @@ class Engine(BaseEngine):
 
     given_definition = GivenDefinition(
         setup=GivenProperty(Str()),
+        boxname=GivenProperty(Str()),
+        issue=GivenProperty(Str()),
         files=GivenProperty(MapPattern(Str(), Str())),
         python_version=GivenProperty(Str()),
     )
@@ -75,6 +77,8 @@ class Engine(BaseEngine):
             .with_long_strings(
                 share=str(self.path.cachestate),
                 build_path=str(self.path.build_path),
+                issue=str(self.given['issue']),
+                boxname=str(self.given['boxname']),
             )
         )
 
