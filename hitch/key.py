@@ -2,16 +2,17 @@ from hitchstory import StoryCollection, BaseEngine
 from hitchstory import GivenDefinition, GivenProperty, InfoDefinition, InfoProperty
 from hitchstory import validate, HitchStoryException, no_stacktrace_for
 from hitchrun import expected
-from strictyaml import Str, MapPattern, Optional, Float, Enum
+from strictyaml import Str, MapPattern, Float, Enum
 from pathquery import pathquery
-from commandlib import Command, python_bin
-from commandlib import python
-from hitchrun import hitch_maintenance
+from commandlib import Command
 from hitchrun import DIR
-from hitchrunpy import ExamplePythonCode, ExpectedExceptionMessageWasDifferent, HitchRunPyException
+from hitchrunpy import (
+    ExamplePythonCode,
+    ExpectedExceptionMessageWasDifferent,
+    HitchRunPyException,
+)
 from templex import Templex
 import hitchpylibrarytoolkit
-import hitchbuildpy
 
 
 class Engine(BaseEngine):
@@ -54,7 +55,6 @@ class Engine(BaseEngine):
             "hitchbuildvagrant", self.path, self.given.get("python_version", "3.7.0")
         ).bin.python
 
-
         if not self.path.cachestate.exists():
             self.path.cachestate.mkdir()
 
@@ -71,16 +71,17 @@ class Engine(BaseEngine):
         self.example_py_code = (
             ExamplePythonCode(self.python, self.path.state)
             .with_setup_code(
-                self.given.get("setup", "")
-                .replace("/path/to/share", self.path.cachestate)
+                self.given.get("setup", "").replace(
+                    "/path/to/share", self.path.cachestate
+                )
             )
             .with_terminal_size(160, 100)
             .with_long_strings(
                 share=str(self.path.cachestate),
                 build_path=str(self.path.build_path),
-                issue=str(self.given['issue']),
-                boxname=str(self.given['boxname']),
-                vmname=str(self.given['vmname']),
+                issue=str(self.given["issue"]),
+                boxname=str(self.given["boxname"]),
+                vmname=str(self.given["vmname"]),
             )
         )
 
@@ -125,7 +126,9 @@ class Engine(BaseEngine):
 
     def tear_down(self):
         for vagrantfile in pathquery(self.path.state).named("Vagrantfile"):
-            Command("vagrant", "destroy", "-f").in_dir(vagrantfile.abspath().dirname()).run()
+            Command("vagrant", "destroy", "-f").in_dir(
+                vagrantfile.abspath().dirname()
+            ).run()
 
 
 @expected(HitchStoryException)
@@ -136,6 +139,7 @@ def bdd(*words):
     StoryCollection(
         pathquery(DIR.key).ext("story"), Engine(DIR, {"rewrite": True})
     ).shortcut(*words).play()
+
 
 def regression():
     """
@@ -169,10 +173,8 @@ def lint():
     hitchpylibrarytoolkit.lint(DIR.project, "hitchbuildvagrant")
 
 
-
 def deploy(version):
     """
     Deploy to pypi as specified version.
     """
     hitchpylibrarytoolkit.deploy(DIR.project, "hitchbuildvagrant", version)
-

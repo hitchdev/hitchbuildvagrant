@@ -1,25 +1,17 @@
-from commandlib import CommandPath, Command
 from hitchbuildvagrant import utils
+from commandlib import Command
 from slugify import slugify
 from path import Path
 from copy import copy
 import hitchbuild
 import jinja2
+import json
 
 
 TEMPLATE_DIR = Path(__file__).realpath().dirname() / "templates"
 
 
-STANDARD_BOXES = {
-    "ubuntu-trusty-64": {
-        "url": "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box",
-        "template": "linux.jinja2",
-    },
-    "ubuntu-bionic-64": {
-        "url": "https://vagrantcloud.com/ubuntu/boxes/bionic64/versions/20181018.0.0/providers/virtualbox.box",
-        "template": "linux.jinja2",
-    },
-}
+STANDARD_BOXES = json.loads(TEMPLATE_DIR.joinpath("boxdata.json").text())
 
 
 class Box(hitchbuild.HitchBuild):
@@ -31,7 +23,7 @@ class Box(hitchbuild.HitchBuild):
 
     def _retrieve(self):
         if not self.download_to.exists():
-            utils.download_file(self.download_to, STANDARD_BOXES[self.machine]['url'])
+            utils.download_file(self.download_to, STANDARD_BOXES[self.machine]["url"])
 
     def with_download_path(self, download_path):
         new_box = copy(self)
@@ -43,14 +35,15 @@ class Box(hitchbuild.HitchBuild):
 
     @property
     def download_to(self):
-        directory = self.basepath if self._download_path is None else self._download_path
+        directory = (
+            self.basepath if self._download_path is None else self._download_path
+        )
         return directory.joinpath("{}.iso".format(self.machine)).abspath()
 
     @property
     def vagrant_file(self):
         return jinja2.Template(TEMPLATE_DIR.joinpath("linux.jinja2").text()).render(
-            machine_name=self._slug,
-            location=self.download_to,
+            machine_name=self._slug, location=self.download_to
         )
 
     @property
@@ -75,4 +68,3 @@ class Box(hitchbuild.HitchBuild):
     @property
     def basepath(self):
         return self.build_path.joinpath(self._slug)
-
