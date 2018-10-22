@@ -20,6 +20,7 @@ class Engine(BaseEngine):
     given_definition = GivenDefinition(
         setup=GivenProperty(Str()),
         boxname=GivenProperty(Str()),
+        vmname=GivenProperty(Str()),
         issue=GivenProperty(Str()),
         files=GivenProperty(MapPattern(Str(), Str())),
         python_version=GivenProperty(Str()),
@@ -79,6 +80,7 @@ class Engine(BaseEngine):
                 build_path=str(self.path.build_path),
                 issue=str(self.given['issue']),
                 boxname=str(self.given['boxname']),
+                vmname=str(self.given['vmname']),
             )
         )
 
@@ -122,9 +124,8 @@ class Engine(BaseEngine):
         IPython.embed()
 
     def tear_down(self):
-        Command("vagrant", "destroy", "-f").in_dir(
-            self.path.gen / "state" / "myvm"
-        ).run()
+        for vagrantfile in pathquery(self.path.state).named("Vagrantfile"):
+            Command("vagrant", "destroy", "-f").in_dir(vagrantfile.abspath().dirname()).run()
 
 
 @expected(HitchStoryException)

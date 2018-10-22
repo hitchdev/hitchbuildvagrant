@@ -15,7 +15,10 @@ STANDARD_BOXES = {
         "url": "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box",
         "template": "linux.jinja2",
     },
-    # ubuntu-bionic0-64
+    "ubuntu-bionic-64": {
+        "url": "https://vagrantcloud.com/ubuntu/boxes/bionic64/versions/20181018.0.0/providers/virtualbox.box",
+        "template": "linux.jinja2",
+    },
 }
 
 
