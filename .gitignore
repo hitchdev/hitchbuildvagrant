@@ -1,0 +1,9 @@
+build/
+dist/
+.cache
+hitchbuildvagrant.egg-info/
+__pycache__
+*.pyc
+*.kate-swp
+hitch/gen
+temp
