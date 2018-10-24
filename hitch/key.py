@@ -79,9 +79,9 @@ class Engine(BaseEngine):
             .with_long_strings(
                 share=str(self.path.cachestate),
                 build_path=str(self.path.build_path),
-                issue=str(self.given["issue"]),
-                boxname=str(self.given["boxname"]),
-                vmname=str(self.given["vmname"]),
+                issue=str(self.given.get("issue")),
+                boxname=str(self.given.get("boxname")),
+                vmname=str(self.given.get("vmname")),
             )
         )
 
@@ -178,3 +178,12 @@ def deploy(version):
     Deploy to pypi as specified version.
     """
     hitchpylibrarytoolkit.deploy(DIR.project, "hitchbuildvagrant", version)
+
+
+def rerun(version="3.7.0"):
+    """
+    Rerun last example code block with specified version of python.
+    """
+    Command(DIR.gen.joinpath("py{0}".format(version), "bin", "python"))(
+        DIR.gen.joinpath("state", "examplepythoncode.py")
+    ).in_dir(DIR.gen.joinpath("state")).run()

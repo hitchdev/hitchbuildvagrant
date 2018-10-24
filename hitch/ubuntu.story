@@ -16,7 +16,11 @@ Ubuntu Vagrant box:
       ubuntu.ensure_built()
       assert issue in ubuntu.cmd("cat /etc/issue").output(), \
           "Expected {} got {}".format(issue, ubuntu.cmd("cat /etc/issue").output())
-      ubuntu.destroy()
+
+  - Run: |
+      ubuntu.ensure_built()
+      assert issue in ubuntu.cmd("cat /etc/issue").output(), \
+          "Expected {} got {}".format(issue, ubuntu.cmd("cat /etc/issue").output())
 
   variations:
     trusty 14.04:

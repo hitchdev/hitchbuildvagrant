@@ -62,6 +62,9 @@ class Box(hitchbuild.HitchBuild):
     def cmd(self):
         return self.vagrant("ssh", "-c")
 
+    def shutdown(self):
+        self.vagrant("halt").run()
+
     def destroy(self):
         self.vagrant("destroy", "-f").run()
 
