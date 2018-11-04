@@ -20,6 +20,8 @@ class Box(hitchbuild.HitchBuild):
         self.machine = machine
         self._download_path = None
         self._slug = slugify(name, separator="_")
+        self._sync_from_location = None
+        self._sync_to_location = None
 
     def _retrieve(self):
         if not self.download_to.exists():
@@ -28,6 +30,14 @@ class Box(hitchbuild.HitchBuild):
     def with_download_path(self, download_path):
         new_box = copy(self)
         new_box._download_path = Path(download_path)
+        return new_box
+
+    def which_syncs(self, path_from, path_to):
+        new_box = copy(self)
+        new_box._sync_from_location = Path(path_from).abspath()
+        new_box._sync_to_location = path_to
+        assert new_box._sync_from_location.exists(), \
+            "Sync from location {} should exist.".format(new_box._sync_from_location)
         return new_box
 
     def fingerprint(self):
@@ -43,7 +53,10 @@ class Box(hitchbuild.HitchBuild):
     @property
     def vagrant_file(self):
         return jinja2.Template(TEMPLATE_DIR.joinpath("linux.jinja2").text()).render(
-            machine_name=self._slug, location=self.download_to
+            machine_name=self._slug,
+            location=self.download_to,
+            sync_from_location=self._sync_from_location,
+            sync_to_location=self._sync_to_location,
         )
 
     @property
@@ -52,11 +65,15 @@ class Box(hitchbuild.HitchBuild):
 
     def build(self):
         self._retrieve()
-        if self.basepath.exists():
-            self.basepath.rmtree()
-        self.basepath.mkdir()
-        self.basepath.joinpath("Vagrantfile").write_text(self.vagrant_file)
-        self.vagrant("up").run()
+        if not self.basepath.exists():
+            self.basepath.mkdir()
+            self.basepath.joinpath("Vagrantfile").write_text(self.vagrant_file)
+            self.vagrant("up").run()
+            self.vagrant("snapshot", "save", self._slug).run()
+            self.vagrant("halt").run()
+
+    def ensure_running(self):
+        self.vagrant("snapshot", "restore", self._slug, "--no-provision").run()
 
     @property
     def cmd(self):

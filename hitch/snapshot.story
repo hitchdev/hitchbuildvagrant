@@ -1,6 +1,7 @@
 Snapshot:
   about: |
-    Build ubuntu, install 
+    Build ubuntu, install python3, take a snapshot and then
+    restore it.
   given:
     vmname: mytrusty
     boxname: ubuntu-trusty-64
@@ -22,6 +23,8 @@ Snapshot:
       snapshot.ensure_built()
       assert "Python" in snapshot.cmd("python3 --version").output(), \
           "Expected 'Python' got {}".format(issue, snapshot.cmd("python3 --version").output())
+
+      snapshot.cmd("sudo apt-get remove python3 -y").run()
       snapshot.shutdown()
 
   - Run: |

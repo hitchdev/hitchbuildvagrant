@@ -15,6 +15,9 @@ class Snapshot(hitchbuild.HitchBuild):
     def vagrant_snapshot(self):
         return self.box.vagrant("snapshot")
 
+    def setup(self):
+        pass
+
     @property
     def cmd(self):
         return self.box.cmd
@@ -25,6 +28,9 @@ class Snapshot(hitchbuild.HitchBuild):
     def build(self):
         if self._slug in self.vagrant_snapshot("list").output().strip().split('\n'):
             self.vagrant_snapshot("restore", self._slug, "--no-provision").run()
+            self.box.vagrant("rsync").run()
         else:
             self.box.ensure_built()
+            self.box.ensure_running()
+            self.setup()
             self.vagrant_snapshot("save", self._slug).run()

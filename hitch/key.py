@@ -42,10 +42,15 @@ class Engine(BaseEngine):
         self.path.state = self.path.gen.joinpath("state")
         self.path.working_dir = self.path.gen.joinpath("working")
         self.path.build_path = self.path.gen.joinpath("build_path")
+        self.path.localsync = self.path.gen.joinpath("local_sync")
 
         if self.path.state.exists():
             self.path.state.rmtree(ignore_errors=True)
         self.path.state.mkdir()
+
+        if self.path.localsync.exists():
+            self.path.localsync.rmtree(ignore_errors=True)
+        self.path.localsync.mkdir()
 
         if self.path.build_path.exists():
             self.path.build_path.rmtree(ignore_errors=True)
@@ -82,6 +87,7 @@ class Engine(BaseEngine):
                 issue=str(self.given.get("issue")),
                 boxname=str(self.given.get("boxname")),
                 vmname=str(self.given.get("vmname")),
+                local_sync_path=str(self.path.localsync),
             )
         )
 
@@ -89,9 +95,12 @@ class Engine(BaseEngine):
     def run(self, code):
         self.example_py_code.with_code(code).run()
 
-    @no_stacktrace_for(AssertionError)
-    def output_ends_with(self, contents):
-        Templex(contents).assert_match(self.result.output.split("\n")[-1])
+    def write_to_localsync(self, **files):
+        for filename, contents in files.items():
+            self.path.localsync.joinpath(filename).write_text(contents)
+
+    def delete_localsync_file(self, filename):
+        self.path.localsync.joinpath(filename).remove()
 
     def write_file(self, filename, contents):
         self.path.state.joinpath(filename).write_text(contents)
@@ -123,6 +132,9 @@ class Engine(BaseEngine):
         import IPython
 
         IPython.embed()
+
+    def on_failure(self, reason):
+        pass
 
     def tear_down(self):
         for vagrantfile in pathquery(self.path.state).named("Vagrantfile"):
